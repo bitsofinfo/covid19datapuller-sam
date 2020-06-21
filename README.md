@@ -70,7 +70,7 @@ aws --region us-east-1 cloudformation delete-stack --stack-name covid19datapulle
 aws --region us-east-1 cloudformation delete-stack --stack-name covid19datapuller-prod
 ```
 
-## Errate
+## Errata
 
 You can create 7 types of CF things represented by these higher level abstractions in the SAM spec + any other lower-level CF resource types
 
