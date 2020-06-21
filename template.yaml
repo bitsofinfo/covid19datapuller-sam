@@ -1,0 +1,69 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  covid19datapuller
+  Demo of a SAM app
+
+Parameters:
+  Env:
+    Type: String
+  Version:
+    Type: String
+
+Globals:
+  Function:
+    Timeout: 10
+    Environment:
+      Variables:
+        VERSION: !Sub "${Version}"
+        TARGET_BUCKET: !Sub "covid19datapuller-${Env}"
+
+
+Resources:
+
+  Covid19DataPullerFunction:
+    Type: AWS::Serverless::Function 
+    Properties:
+      CodeUri: covid19datapuller/
+      Handler: app.fetch
+      Runtime: python3.8
+      FunctionName: !Sub "covid19datapuller-${Env}"
+      Events:
+        Covid19DataPullerFunction5m:
+          Type: Schedule
+          Properties:
+              Schedule: 'rate(60 minutes)'
+              Name: !Sub 'covid19datapuller-${Env}'
+              Description: test schedule
+              Enabled: True
+
+      AutoPublishAlias: live
+
+      Policies:
+        - Statement:
+          - Sid: !Sub "Covid19datapullerS3BucketPolicy${Env}"
+            Effect: Allow
+            Action:
+              - s3:*
+            Resource: 
+              - !Sub 'arn:aws:s3:::covid19datapuller-${Env}'
+              - !Sub 'arn:aws:s3:::covid19datapuller-${Env}/*'
+        
+
+  Covid19DataPullerFunctionBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "covid19datapuller-${Env}"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+Outputs:
+  Covid19DataPullerFunction:
+    Description: "covid19datapuller Function ARN"
+    Value: !GetAtt Covid19DataPullerFunction.Arn
+  Covid19DataPullerFunctionIamRole:
+    Description: "Implicit IAM Role created for covid19datapuller function"
+    Value: !GetAtt Covid19DataPullerFunctionRole.Arn
